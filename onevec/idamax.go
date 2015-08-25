@@ -43,7 +43,6 @@ func Fuzz(data []byte) int {
 	testIdamax(str, n, x, incX)
 	testDnrm2(str, n, x, incX)
 	testDasum(str, n, x, incX)
-	// Do this last because it changes x.
 	testDscal(str, n, x, incX, alpha)
 	return 0
 }
@@ -97,7 +96,8 @@ func testDasum(str string, n int, x []float64, incX int) {
 }
 
 func testDscal(str string, n int, x []float64, incX int, alpha float64) {
-	nat := func() { native.Implementation{}.Dscal(n, alpha, x, incX) }
+	natX := blasfuzz.CloneF64S(x)
+	nat := func() { native.Implementation{}.Dscal(n, alpha, natX, incX) }
 	errNative := blasfuzz.CatchPanic(nat)
 
 	cx := blasfuzz.CloneF64S(x)
@@ -105,5 +105,5 @@ func testDscal(str string, n int, x []float64, incX int, alpha float64) {
 	errC := blasfuzz.CatchPanic(c)
 
 	blasfuzz.SamePanic(str, errC, errNative)
-	blasfuzz.SameF64S(str, cx, x)
+	blasfuzz.SameF64S(str, cx, natX)
 }
