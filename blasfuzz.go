@@ -8,6 +8,19 @@ import (
 	"github.com/gonum/floats"
 )
 
+// Bools extracts a byte's worth of booleans
+func Bools(data []byte) ([8]bool, bool) {
+	bools := [8]bool{}
+	if len(data) < 1 {
+		return bools, false
+	}
+	b := data[0]
+	for i := range bools {
+		bools[i] = b&(1<<uint(i)) != 0
+	}
+	return bools, true
+}
+
 // GetInt gets an integer with the given number of bytes
 func Int(data []byte, b int) (n int, ok bool) {
 	if len(data) < b {
@@ -93,5 +106,14 @@ func SameF64Approx(str string, c, native, absTol, relTol float64) {
 func SameF64S(str string, c, native []float64) {
 	if !floats.Same(c, native) {
 		panic(fmt.Sprintf("Case %s: []float64 mismatch. c = %v, native = %v.", str, c, native))
+	}
+}
+
+func SameF64SApprox(str string, c, native []float64, absTol, relTol float64) {
+	if len(c) != len(native) {
+		panic(str)
+	}
+	for i, v := range c {
+		SameF64Approx(str, v, native[i], absTol, relTol)
 	}
 }
